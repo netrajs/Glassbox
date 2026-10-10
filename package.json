@@ -1,0 +1,206 @@
+{
+  "name": "glassbox",
+  "displayName": "Glassbox: See Through Your AI",
+  "description": "Watch every change Claude Code makes, approve or redirect it, replay it, understand it, and find the AI-written code you never reviewed.",
+  "version": "0.1.0",
+  "publisher": "glassbox",
+  "license": "MIT",
+  "icon": "media/icon.png",
+  "galleryBanner": {
+    "color": "#0d1117",
+    "theme": "dark"
+  },
+  "engines": {
+    "vscode": "^1.140.0"
+  },
+  "categories": [
+    "AI",
+    "Visualization",
+    "Other"
+  ],
+  "keywords": [
+    "claude",
+    "claude code",
+    "ai",
+    "agent",
+    "code review",
+    "vibe coding",
+    "explain",
+    "replay"
+  ],
+  "activationEvents": [
+    "onStartupFinished"
+  ],
+  "main": "./dist/extension.js",
+  "bin": {
+    "glassbox": "./dist/web.js"
+  },
+  "contributes": {
+    "commands": [
+      {
+        "command": "glassbox.connect",
+        "title": "Connect Claude Code",
+        "category": "Glassbox"
+      },
+      {
+        "command": "glassbox.disconnect",
+        "title": "Disconnect Claude Code",
+        "category": "Glassbox"
+      },
+      {
+        "command": "glassbox.showLog",
+        "title": "Show Log",
+        "category": "Glassbox"
+      },
+      {
+        "command": "glassbox.approve",
+        "title": "Approve Pending Edit",
+        "category": "Glassbox",
+        "icon": "$(check)"
+      },
+      {
+        "command": "glassbox.redirect",
+        "title": "Redirect Pending Edit",
+        "category": "Glassbox",
+        "icon": "$(reply)"
+      },
+      {
+        "command": "glassbox.replay",
+        "title": "Replay Pending Edit",
+        "category": "Glassbox",
+        "icon": "$(play)"
+      },
+      {
+        "command": "glassbox.setApiKey",
+        "title": "Set API Key",
+        "category": "Glassbox"
+      },
+      {
+        "command": "glassbox.clearApiKey",
+        "title": "Remove API Key",
+        "category": "Glassbox"
+      },
+      {
+        "command": "glassbox.pauseClaude",
+        "title": "Pause Claude",
+        "category": "Glassbox",
+        "icon": "$(debug-pause)"
+      },
+      {
+        "command": "glassbox.resumeClaude",
+        "title": "Resume Claude",
+        "category": "Glassbox",
+        "icon": "$(debug-continue)"
+      },
+      {
+        "command": "glassbox.stopClaude",
+        "title": "Stop Claude",
+        "category": "Glassbox",
+        "icon": "$(debug-stop)"
+      },
+      {
+        "command": "glassbox.tellClaude",
+        "title": "Tell Claude…",
+        "category": "Glassbox"
+      },
+      {
+        "command": "glassbox.toggleOtherTools",
+        "title": "Watch Other AI Tools (on/off)",
+        "category": "Glassbox"
+      }
+    ],
+    "configuration": {
+      "title": "Glassbox",
+      "properties": {
+        "glassbox.port": {
+          "type": "number",
+          "default": 7337,
+          "description": "Port Glassbox listens on for Claude Code hooks. If it is taken, the next free port is used."
+        },
+        "glassbox.model": {
+          "type": "string",
+          "default": "claude-opus-5-5",
+          "description": "Claude model used to explain changes. claude-haiku-5-5 is faster and cheaper."
+        },
+        "glassbox.watchOtherTools": {
+          "type": "boolean",
+          "default": false,
+          "description": "Also record changes made by other AI tools (Cursor, Copilot, Antigravity…) by watching files on disk. These can be replayed and appear in Blind Spots, but can't be paused."
+        }
+      }
+    },
+    "menus": {
+      "editor/title": [
+        {
+          "command": "glassbox.approve",
+          "when": "glassbox.pending",
+          "group": "navigation@1"
+        },
+        {
+          "command": "glassbox.redirect",
+          "when": "glassbox.pending",
+          "group": "navigation@2"
+        },
+        {
+          "command": "glassbox.replay",
+          "when": "glassbox.pending",
+          "group": "navigation@3"
+        }
+      ]
+    },
+    "viewsContainers": {
+      "activitybar": [
+        {
+          "id": "glassbox",
+          "title": "Glassbox",
+          "icon": "media/glassbox.svg"
+        }
+      ]
+    },
+    "views": {
+      "glassbox": [
+        {
+          "type": "webview",
+          "id": "glassbox.panel",
+          "name": "Glassbox"
+        }
+      ]
+    }
+  },
+  "scripts": {
+    "vscode:prepublish": "npm run package",
+    "compile": "npm run check-types && npm run lint && node esbuild.js && npm run build:webview",
+    "watch": "npm-run-all -p watch:*",
+    "watch:esbuild": "node esbuild.js --watch",
+    "watch:tsc": "tsc --noEmit --watch --project tsconfig.json",
+    "package": "npm run check-types && npm run lint && node esbuild.js --production && npm run build:webview",
+    "compile-tests": "tsc -p . --outDir out",
+    "watch-tests": "tsc -p . -w --outDir out",
+    "pretest": "npm run compile-tests && npm run compile && npm run lint",
+    "check-types": "tsc --noEmit",
+    "lint": "eslint src",
+    "test": "vscode-test",
+    "build:webview": "npm --prefix webview-ui run build",
+    "web": "node dist/web.js",
+    "test:core": "esbuild test/core.test.ts --bundle --platform=node --outfile=out/core.test.js --log-level=warning && node --test out/core.test.js"
+  },
+  "devDependencies": {
+    "@types/mocha": "^10.0.10",
+    "@types/node": "24.x",
+    "@types/vscode": "^1.140.0",
+    "@vscode/test-cli": "^0.0.15",
+    "@vscode/test-electron": "^3.0.0",
+    "esbuild": "^0.28.1",
+    "eslint": "^10.5.0",
+    "npm-run-all": "^4.1.5",
+    "typescript": "^6.0.3",
+    "typescript-eslint": "^8.61.1"
+  },
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.133.0"
+  },
+  "overrides": {
+    "diff": "^8.0.4",
+    "serialize-javascript": "^7.0.6"
+  }
+}
